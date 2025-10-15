@@ -1,0 +1,9 @@
+<h1> Produits ayant comme prix compris 80 et 120€ </h1>
+
+<ul>
+    {% for product in products %}
+        <li>{{ product.name }} - {{ product.unit_price }} €</li>
+    {% else %}
+        <li>Aucun produit trouvé.</li>
+    {% endfor %}
+</ul>

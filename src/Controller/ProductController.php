@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
+use App\Repository\ProductRepository;
 
 use App\Entity\Product;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,15 +15,15 @@ class ProductController extends AbstractController
 {
    // Création d'un nouveau produit en base de donnée 
 
-            #[Route('/product', name:'create_product', methods:['POST'])]
+            #[Route('/product', name:'create_product')]
                 public function createProduct(Request $request, EntityManagerInterface $entityManager):Response{
 
                     $content = json_decode($request->getContent(),true);
                     $product = new Product();
-                    $product -> setName($content['Disque']);
-                    $product -> setUnitPrice($content[12]);
+                    $product -> setName('Serveur');
+                    $product -> setUnitPrice(110.50);
                     $product -> setCreatedAt(new \DateTime);
-                    $product -> setDescription($content['Pour jouer à l\'ultimate']);
+                    $product -> setDescription('Pour jouer à l\'ultimate en ligne');
 
                     $entityManager->persist($product);
                     $entityManager->flush();
@@ -80,6 +81,14 @@ class ProductController extends AbstractController
 
                 return new Response('ok');
             }
-               
-}
+
+             #[Route('/products/filter', name: 'app_products_filter')]
+                public function filter(ProductRepository $productRepository): Response
+                    {
+                        $products = $productRepository->findAllBetweenPrices(80, 120);
+                        return $this->render('product_filter/productFilter.html.twig', [
+                                'products' => $products,
+                            ]);
+                    }
+            }
 ?>

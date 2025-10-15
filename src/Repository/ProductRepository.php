@@ -11,46 +11,24 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ProductRepository extends ServiceEntityRepository
 {
-
-    public function findAllGreaterThanPrice(int $unit_price): array
-    {
-        $conn = $this->getEntityManager() ->getConnection();
-        $sql = '
-            SELECT * FROM product p
-            WHERE p.price > :price
-            ORDER BY p.price ASC
-            ';
-         $resultSet = $conn->executeQuery($sql, ['price' => $price]);
-         return $resultSet->fetchAllAssociative();
-    }
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Product::class);
     }
 
-    //    /**
-    //     * @return Product[] Returns an array of Product objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Retourne tous les produits dont le prix est compris entre deux valeurs.
+     */
+    public function findAllBetweenPrices(int $minPrice, int $maxPrice, bool $includeUnavailableProducts = false): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->where('p.unit_price BETWEEN :minPrice AND :maxPrice')
+            ->setParameter('minPrice', $minPrice)
+            ->setParameter('maxPrice', $maxPrice)
+            ->orderBy('p.unit_price', 'ASC');
 
-    //    public function findOneBySomeField($value): ?Product
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $query = $qb->getQuery();
+
+        return $query->execute();
+    }
 }
