@@ -11,6 +11,19 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ProductRepository extends ServiceEntityRepository
 {
+
+    public function findAllGreaterThanPrice(int $unit_price): array
+    {
+        $conn = $this->getEntityManager() ->getConnection();
+        $sql = '
+            SELECT * FROM product p
+            WHERE p.price > :price
+            ORDER BY p.price ASC
+            ';
+         $resultSet = $conn->executeQuery($sql, ['price' => $price]);
+         return $resultSet->fetchAllAssociative();
+    }
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Product::class);

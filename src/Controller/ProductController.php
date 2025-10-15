@@ -14,13 +14,15 @@ class ProductController extends AbstractController
 {
    // Création d'un nouveau produit en base de donnée 
 
-            #[Route('/product', name:'create_product')]
-                public function createProduct(EntityManagerInterface $entityManager):Response{
+            #[Route('/product', name:'create_product', methods:['POST'])]
+                public function createProduct(Request $request, EntityManagerInterface $entityManager):Response{
+
+                    $content = json_decode($request->getContent(),true);
                     $product = new Product();
-                    $product -> setName('Disque');
-                    $product -> setUnitPrice(12);
+                    $product -> setName($content['Disque']);
+                    $product -> setUnitPrice($content[12]);
                     $product -> setCreatedAt(new \DateTime);
-                    $product -> setDescription('Pour jouer à l\'ultimate');
+                    $product -> setDescription($content['Pour jouer à l\'ultimate']);
 
                     $entityManager->persist($product);
                     $entityManager->flush();
@@ -30,13 +32,19 @@ class ProductController extends AbstractController
                 ]);
             }
 
-            #[Route('/product/edit/{id}', name:'edit_product')]
-                public function updateProduct(EntityManagerInterface $entityManager, int $id):Response{
+            #[Route('/product/{id}/edit', name:'edit_product', methods:['PATCH','PUT'])]
+                public function updateProduct(Request $request, EntityManagerInterface $entityManager, int $id):Response{
                     $product = $entityManager-> getRepository(Product::class)->find($id);
+
+                    $content = json_decode($request->getContent(),true);
 
                     if(!$product){
                         throw $this->createNotFoundException('No product for id' .$id);
                     };
+
+                    $product->setName($content['name']);
+                    $product->setUnitPrice($content['unitPrice']);
+                    $product->setDescription($content['description']);
                      $product -> setName("Serveur");
                      $entityManager->persist($product);
                      $entityManager->flush();
@@ -44,7 +52,7 @@ class ProductController extends AbstractController
                      return $this->render('product_edit/productEdit.html.twig',[ 'product' => $product]);
                 }
 
-                #[Route('/product/remove/{id}', name:'remove_product')]
+                #[Route('/product/remove/{id}', name:'remove_product', methods:['DELETE'])]
                     public function removeProduct(EntityManagerInterface $entityManager, int $id):Response{
                         $product = $entityManager-> getRepository(Product::class)->find($id);
 
