@@ -70,7 +70,8 @@ class ProductController extends AbstractController
                 $content = json_decode($request-> getContent(),true);
                 dd($content);
 
-                return new Response('JSON test');
+                return new Response('ok');
             }
                
 }
+?>
