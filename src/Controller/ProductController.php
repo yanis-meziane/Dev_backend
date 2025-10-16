@@ -89,12 +89,14 @@ class ProductController extends AbstractController
         return new JsonResponse('All products');
     }
 
-    #[Route('/avalaible', name: 'avalaible_products', methods: ['GET'])]
+    #[Route('/available/{minPrice}/{maxPrice}', name: 'avalaible_products', methods: ['GET'])]
     public function Avaliableproducts(
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        string $minPrice,
+        string $maxPrice,
     ): JsonResponse
     {
-        $products = $entityManager->getRepository(Product::class)->findAllGreaterThanPrice();
+        $products = $entityManager->getRepository(Product::class)->findAllGreaterThanPrice($minPrice,$maxPrice);
 
         dd($products);
 

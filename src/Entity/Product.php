@@ -26,6 +26,22 @@ class Product
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(type: Types::SMALLINT)]
+    private ?int $Storage = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $category = null;
+
+
+    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'products')]
+  
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -78,4 +94,18 @@ class Product
 
         return $this;
     }
+
+    public function getStorage(): ?int
+    {
+        return $this->Storage;
+    }
+
+    public function setStorage(int $Storage): static
+    {
+        $this->Storage = $Storage;
+
+        return $this;
+    }
+
+
 }

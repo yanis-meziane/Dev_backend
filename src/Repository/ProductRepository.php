@@ -6,6 +6,7 @@ use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+
 /**
  * @extends ServiceEntityRepository<Product>
  */
@@ -16,17 +17,19 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-    public function findAllGreaterThanPrice(): array
+    public function findAllGreaterThanPrice(int $price, bool $includeUnaivableProducts = false): array
     {
-        $minPrice = 80.00;
-        $maxPrice = 120.00;
+        /*$minPrice = 80.00;
+        $maxPrice = 120.00;*/
 
-        $qb = $this->createQueryBuilder('p')
-            ->where('p.unitPrice BETWEEN :minPrice AND :maxPrice')
-            //->andWhere('p.storage > 0')
-            ->setParameter('minPrice', $minPrice)
-            ->setParameter('maxPrice', $maxPrice)
-            ->orderBy('p.unitPrice', 'ASC');
+         $qb = $this->createQueryBuilder('p')
+            ->where('p.price > :price')
+            ->setParameter('price', $price)
+            ->orderBy('p.price', 'ASC');
+
+        if (!$includeUnavailableProducts) {
+            $qb->andWhere('p.available = TRUE');
+        }
 
         $query = $qb->getQuery();
 
