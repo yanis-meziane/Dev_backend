@@ -3,56 +3,63 @@
 namespace App\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
-use App\Entity\Product;
-use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Psr\Log\LoggerInterface;
 
 class LuckyController extends AbstractController
 {
-    #[Route('/lucky/number', name:'random_number')]
+    #[Route('/lucky/number', 
+        name: 'random_number'
+    )]
     public function number(): Response
     {
-         $number = random_int(0, 100);
+        $number = random_int(0, 100);
 
         return $this->render('lucky/number.html.twig', [
             'number' => $number,
         ]);
     }
 
-    #[Route('/lucky/redirect', name:'redirect_to_random_number')]
-    public function redirectToRandomNumber() : RedirectResponse
-        {
-            return $this-> redirectTo('random_number');
-        }
-
-    #[Route('/notations/notations','marks')]
-    public function notation(): Response
+    #[Route('/lucky/redirect', 
+        name: 'redirect_to_random_number'
+    )]
+    public function redirectToRandomNumber(LoggerInterface $logger): RedirectResponse
     {
-         $notation1 = random_int(0, 20);
-         $notation2 = random_int(0, 20);
-         $notation3 = random_int(0, 20);
-         $notation4 = random_int(0, 20);
+        $logger->info("redirectToRandomNumber => la redirection s'est bien passÃ©e");
 
-        return $this->render('notations/notations.html.twig', [
-            'notation1' => $notation1,
-            'notation2' => $notation2,
-            'notation3' => $notation3,
-            'notation4' => $notation4,
+        return $this->redirectToRoute('marks', [
+            'note1' => 20, 
+            'note2' => 15,
+            'note3' => 10,
+            'note4' => 5
         ]);
     }
 
-    #[Route('/notations_id/notations_id/{id1}/{id2}/{id3}/{id4}', name:'marksId', /*requirement:['note1' => '\d+','note2' => '\d+','note3' => '\d+','note4' => '\d+']*/)]
-    public function show(int $id1, int $id2, int $id3, int $id4): Response
+    #[Route('/notes/eleves/{note1}/{note2}/{note3}/{note4}', 
+        name: 'marks', 
+        requirements: [
+            'note1' => '\d+', 
+            'note2' => '\d+', 
+            'note3' => '\d+', 
+            'note4' => '\d+'
+        ]
+    )]
+    public function getMarks(int $note1, int $note2,int $note3,int $note4): Response
     {
-       return $this->render('notations_id/notation_id.html.twig', [
-            'noteId_1' => $id1,
-            'noteId_2' => $id2,
-            'noteId_3' => $id3,
-            'noteId_4' => $id4,
-    ]);
+        //$randomNumberPage = $this->generateUrl('random_number');
+
+        /*$note1 = random_int(0, 20);
+        $note2 = random_int(0, 20);
+        $note3 = random_int(0, 20);
+        $note4 = random_int(0, 20);*/
+
+        return $this->render('notes/eleves.html.twig', [
+            'note1' => $note1,
+            'note2' => $note2,
+            'note3' => $note3,
+            'note4' => $note4,
+        ]);
     }
 }
-?>

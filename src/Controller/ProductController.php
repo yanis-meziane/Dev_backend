@@ -1,94 +1,118 @@
 <?php
 
+// src/Controller/ProductController.php
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpFoundation\Request;
-use App\Repository\ProductRepository;
-
+// ...
 use App\Entity\Product;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 
+#[Route('/product')]
 class ProductController extends AbstractController
 {
-   // Création d'un nouveau produit en base de donnée 
+    #[Route('/create', name: 'create_product', methods: ['POST'])]
+    public function createProduct(
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response
+    {
+        $content = json_decode($request->getContent(), true);
 
-            #[Route('/product', name:'create_product')]
-                public function createProduct(Request $request, EntityManagerInterface $entityManager):Response{
+        $product = new Product();
+        $product->setName($content['name']);
+        $product->setUnitPrice($content['unitPrice']);
+        $product->setCreatedAt(new \Datetime());
+        $product->setDescription($content['description']);
 
-                    $content = json_decode($request->getContent(),true);
-                    $product = new Product();
-                    $product -> setName('Serveur');
-                    $product -> setUnitPrice(110.50);
-                    $product -> setCreatedAt(new \DateTime);
-                    $product -> setDescription('Pour jouer à l\'ultimate en ligne');
+        // tell Doctrine you want to (eventually) save the Product (no queries yet)
+        $entityManager->persist($product);
 
-                    $entityManager->persist($product);
-                    $entityManager->flush();
+        // actually executes the queries (i.e. the INSERT query)
+        $entityManager->flush();
 
-                    return $this->render('product/product.html.twig', [
-                    'product' => $product,
-                ]);
-            }
+        return new Response('Saved new product with id '.$product->getId());
+    }
 
-            #[Route('/product/{id}/edit', name:'edit_product', methods:['PATCH','PUT'])]
-                public function updateProduct(Request $request, EntityManagerInterface $entityManager, int $id):Response{
-                    $product = $entityManager-> getRepository(Product::class)->find($id);
+    #[Route('/{id}/edit', name: 'edit_product', methods: ['PATCH', 'PUT'])]
+    public function editProduct(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        int $id
+    ): Response
+    {
+        $content = json_decode($request->getContent(), true);
+        $product = $entityManager->getRepository(Product::class)->find($id);
+        if (isset($content['name'])) {
+            $product->setName($content['name']);
+        }
+        $product->setUnitPrice($content['unitPrice']);
+        $product->setDescription($content['description']);
 
-                    $content = json_decode($request->getContent(),true);
+        // tell Doctrine you want to (eventually) save the Product (no queries yet)
+        $entityManager->persist($product);
 
-                    if(!$product){
-                        throw $this->createNotFoundException('No product for id' .$id);
-                    };
+        // actually executes the queries (i.e. the INSERT query)
+        $entityManager->flush();
 
-                    $product->setName($content['name']);
-                    $product->setUnitPrice($content['unitPrice']);
-                    $product->setDescription($content['description']);
-                     $product -> setName("Serveur");
-                     $entityManager->persist($product);
-                     $entityManager->flush();
+        return new Response('Update product with id '.$product->getId());
+    }
 
-                     return $this->render('product_edit/productEdit.html.twig',[ 'product' => $product]);
-                }
+    #[Route('/{id}/delete', name: 'delete_product', methods : ['DELETE'])]
+    public function deleteProduct(
+        EntityManagerInterface $entityManager,
+        int $id
+    ): Response
+    {
+        $product = $entityManager->getRepository(Product::class)->find($id);
 
-                #[Route('/product/remove/{id}', name:'remove_product', methods:['DELETE'])]
-                    public function removeProduct(EntityManagerInterface $entityManager, int $id):Response{
-                        $product = $entityManager-> getRepository(Product::class)->find($id);
+        // tell Doctrine you want to (eventually) save the Product (no queries yet)
+        $entityManager->remove($product);
 
-                        if(!$product){
-                            throw $this->createNotFoundException('No product for id' .$id);
-                        };
-                            $entityManager->remove($product);
-                            $entityManager->flush();
+        // actually executes the queries (i.e. the INSERT query)
+        $entityManager->flush();
 
-                     return $this->render('remove_product/removeProduct.html.twig',[ 'product' => $product]);
-                }
+        return new Response('Delete product with ID => '.$id);
+    }
 
-               /*#[Route('/product/all', name:'all_product')]
-                    public function allElementVisibility(EntityManagerInterface $entityManager):Response {
-                        $products = $entityManager->getRepository
-                    }*/
+    #[Route('/all', name: 'all_product', methods: ['GET'])]
+    public function allProduct(
+        EntityManagerInterface $entityManager
+    ): JsonResponse
+    {
+        $products = $entityManager->getRepository(Product::class)->findAll();
 
-                #[Route('/product/test', name:'all_products')]
-                public function getInfosRequest(
-                    Request $request
-                ): Response
-            {
-                $content = json_decode($request-> getContent(),true);
-                dd($content);
+        return new JsonResponse('All products');
+    }
 
-                return new Response('ok');
-            }
+    #[Route('/avalaible', name: 'avalaible_products', methods: ['GET'])]
+    public function Avaliableproducts(
+        EntityManagerInterface $entityManager
+    ): JsonResponse
+    {
+        $products = $entityManager->getRepository(Product::class)->findAllGreaterThanPrice();
 
-             #[Route('/products/filter', name: 'app_products_filter')]
-                public function filter(ProductRepository $productRepository): Response
-                    {
-                        $products = $productRepository->findAllBetweenPrices(80, 120);
-                        return $this->render('product_filter/productFilter.html.twig', [
-                                'products' => $products,
-                            ]);
-                    }
-            }
-?>
+        dd($products);
+
+        return new JsonResponse($products, JsonResponse::HTTP_OK);
+    }
+
+     // use Symfony\Component\HttpFoundation\Request;
+
+    #[Route('/test', name: 'test_product', methods: ['GET'])]
+    public function getInfosRequest(
+        Request $request
+    ): Response
+    {
+        // $param = $request->attributes->get('param');
+        $content = json_decode($request->getContent(), true);
+
+        dd($content);
+
+        return new Response('JSON test', Response::HTTP_OK);
+    }
+}
