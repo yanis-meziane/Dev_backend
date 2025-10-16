@@ -16,19 +16,45 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-    /**
-     * Retourne tous les produits dont le prix est compris entre deux valeurs.
-     */
-    public function findAllBetweenPrices(int $minPrice, int $maxPrice, bool $includeUnavailableProducts = false): array
+    public function findAllGreaterThanPrice(): array
     {
+        $minPrice = 80.00;
+        $maxPrice = 120.00;
+
         $qb = $this->createQueryBuilder('p')
-            ->where('p.unit_price BETWEEN :minPrice AND :maxPrice')
+            ->where('p.unitPrice BETWEEN :minPrice AND :maxPrice')
+            //->andWhere('p.storage > 0')
             ->setParameter('minPrice', $minPrice)
             ->setParameter('maxPrice', $maxPrice)
-            ->orderBy('p.unit_price', 'ASC');
+            ->orderBy('p.unitPrice', 'ASC');
 
         $query = $qb->getQuery();
 
         return $query->execute();
     }
+
+    //    /**
+    //     * @return Product[] Returns an array of Product objects
+    //     */
+    //    public function findByExampleField($value): array
+    //    {
+    //        return $this->createQueryBuilder('p')
+    //            ->andWhere('p.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->orderBy('p.id', 'ASC')
+    //            ->setMaxResults(10)
+    //            ->getQuery()
+    //            ->getResult()
+    //        ;
+    //    }
+
+    //    public function findOneBySomeField($value): ?Product
+    //    {
+    //        return $this->createQueryBuilder('p')
+    //            ->andWhere('p.exampleField = :val')
+    //            ->setParameter('val', $value)
+    //            ->getQuery()
+    //            ->getOneOrNullResult()
+    //        ;
+    //    }
 }
