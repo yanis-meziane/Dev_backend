@@ -55,7 +55,7 @@ class LuckyController extends AbstractController
         $note3 = random_int(0, 20);
         $note4 = random_int(0, 20);*/
 
-        return $this->render('notes/eleves.html.twig', [
+        return $this->render('notations/notations.html.twig', [
             'note1' => $note1,
             'note2' => $note2,
             'note3' => $note3,
