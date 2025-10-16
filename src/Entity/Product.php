@@ -14,33 +14,24 @@ class Product
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 50)]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 2, scale: 0)]
-    private ?string $unit_price = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
+    private ?string $unitPrice = null;
 
     #[ORM\Column]
-    private ?\DateTime $created_at = null;
+    private ?\DateTime $createdAt = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::SMALLINT)]
-    private ?int $Storage = null;
+    private ?int $storage = null;
 
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $category = null;
-
-
-    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'products')]
-  
-    public function setCategory(?Category $category): self
-    {
-        $this->category = $category;
-
-        return $this;
-    }
+    #[ORM\ManyToOne(inversedBy: 'products')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Category $category = null;
 
     public function getId(): ?int
     {
@@ -61,24 +52,24 @@ class Product
 
     public function getUnitPrice(): ?string
     {
-        return $this->unit_price;
+        return $this->unitPrice;
     }
 
-    public function setUnitPrice(string $unit_price): static
+    public function setUnitPrice(string $unitPrice): static
     {
-        $this->unit_price = $unit_price;
+        $this->unitPrice = $unitPrice;
 
         return $this;
     }
 
     public function getCreatedAt(): ?\DateTime
     {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $created_at): static
+    public function setCreatedAt(\DateTime $createdAt): static
     {
-        $this->created_at = $created_at;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
@@ -97,15 +88,25 @@ class Product
 
     public function getStorage(): ?int
     {
-        return $this->Storage;
+        return $this->storage;
     }
 
-    public function setStorage(int $Storage): static
+    public function setStorage(int $storage): static
     {
-        $this->Storage = $Storage;
+        $this->storage = $storage;
 
         return $this;
     }
 
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
 
+    public function setCategory(?Category $category): static
+    {
+        $this->category = $category;
+
+        return $this;
+    }
 }

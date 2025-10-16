@@ -5,6 +5,7 @@ namespace App\Controller;
 
 // ...
 use App\Entity\Product;
+use App\Entity\Category;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -89,21 +90,42 @@ class ProductController extends AbstractController
         return new JsonResponse('All products');
     }
 
-    #[Route('/available/{minPrice}/{maxPrice}', name: 'avalaible_products', methods: ['GET'])]
-    public function Avaliableproducts(
+    #[Route('/avalaible/{minPrice}/{maxPrice}', name: 'avalaible_products', methods: ['GET'])]
+    public function avalaibleProducts(
         EntityManagerInterface $entityManager,
         string $minPrice,
-        string $maxPrice,
+        string $maxPrice
     ): JsonResponse
     {
-        $products = $entityManager->getRepository(Product::class)->findAllGreaterThanPrice($minPrice,$maxPrice);
-
-        dd($products);
+        $products = $entityManager->getRepository(Product::class)->getAllProductsInStorageBetweenPrice($minPrice, $maxPrice);
 
         return new JsonResponse($products, JsonResponse::HTTP_OK);
     }
 
-     // use Symfony\Component\HttpFoundation\Request;
+    #[Route('/category/{categoryId}', name: 'get_products_by_category', methods: ['GET'])]
+    public function getProductsByCategory(
+        EntityManagerInterface $entityManager,
+        int $categoryId
+    ): JsonResponse
+    {
+        // option utilisation des collections d'ojets propres à Symfony
+
+        $category = $entityManager->getRepository(Category::class)->find($categoryId);
+
+        $tab=[];
+        foreach($category->getProducts() as $key => $product)
+        {
+            $tab[$key]['id']    = $product->getId();
+            $tab[$key]['name']  = $product->getName();
+        }
+
+        return new JsonResponse($tab, JsonResponse::HTTP_OK);
+
+        // option requête sur-mesure via DQL queryBuilder
+        $products = $entityManager->getRepository(Product::class)->getAllProductsByCategory($categoryId);
+
+        return new JsonResponse($products, JsonResponse::HTTP_OK);
+    }
 
     #[Route('/test', name: 'test_product', methods: ['GET'])]
     public function getInfosRequest(
